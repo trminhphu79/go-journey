@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import (
 	"fmt"
@@ -17,6 +17,12 @@ func Connect() (*gorm.DB, error) {
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
+
+	fmt.Sprintln("host: ", host)
+	fmt.Sprintln("user: ", user)
+	fmt.Sprintln("port: ", port)
+	fmt.Sprintln("password: ", password)
+	fmt.Sprintln("dbname: ", dbname)
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",

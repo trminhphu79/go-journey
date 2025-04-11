@@ -1,1 +1,10 @@
-.env
+*.env
+
+.DS_Store
+
+go.work
+go.work.sum
+
+build
+
+keys/*
