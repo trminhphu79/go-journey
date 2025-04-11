@@ -16,7 +16,7 @@ A simple, modular Todo list application built using the Go programming language,
 | Layer        | Tech                                    |
 |--------------|------------------------------------------|
 | **Language** | [Go (Golang)](https://golang.org)        |
-| **Web**      | [Gin](https://github.com/gin-gonic/gin)  |
+| **Http**      | [Gin](https://github.com/gin-gonic/gin)  |
 | **ORM**      | [GORM](https://gorm.io)                  |
 | **Database** | PostgreSQL                               |
 | **API Docs** | [Swaggo (Gin Swagger)](https://github.com/swaggo/gin-swagger) |
