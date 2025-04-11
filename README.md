@@ -1,6 +1,6 @@
 # 📝 Go Todo Application
 
-A simple, modular Todo list application built using the Go programming language with a RESTful API design.
+A simple, modular Todo list application built using the Go programming language, following RESTful API design and clean architecture principles.
 
 ---
 
@@ -14,22 +14,28 @@ A simple, modular Todo list application built using the Go programming language 
 ## ⚙️ Tech Stack
 
 | Layer        | Tech                                    |
-| ------------ | --------------------------------------- |
-| **Language** | [Go (Golang)](https://golang.org)       |
-| **Web**      | [Gin](https://github.com/gin-gonic/gin) |
-| **ORM**      | [GORM](https://gorm.io)                 |
-| **Database** | PostgreSQL                              |
-| **DI Tool**  | [Wire](https://github.com/google/wire)  |
+|--------------|------------------------------------------|
+| **Language** | [Go (Golang)](https://golang.org)        |
+| **Web**      | [Gin](https://github.com/gin-gonic/gin)  |
+| **ORM**      | [GORM](https://gorm.io)                  |
+| **Database** | PostgreSQL                               |
+| **API Docs** | [Swaggo (Gin Swagger)](https://github.com/swaggo/gin-swagger) |
+| **DI Tool**  | [Google Wire](https://github.com/google/wire) |
 
 ---
 
 ## 🚀 Features
 
-- ✅ Create, read, update, delete todo items
-- ✅ Mark todos as completed/incomplete
-- ✅ RESTful API endpoints
-- ✅ PostgreSQL-based persistent storage
-- ✅ Clean architecture with service layer and DI
+- ✅ JWT-based Authentication (`Auth`)
+- ✅ User Management (`User`)
+- ✅ Task Management (`Task`)
+- ✅ Create, read, update, delete todos
+- ✅ Mark tasks as completed/incomplete
+- ✅ RESTful API endpoints with validation
+- ✅ Swagger UI for API documentation
+- ✅ Clean, testable architecture using service/controller layers
+- ✅ PostgreSQL-backed persistent storage
+- ✅ Dockerized with `docker-compose`
 
 ---
 
