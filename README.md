@@ -18,7 +18,7 @@ A simple, modular Task Management list application built using the Go programmin
 | **Language** | [Go (Golang)](https://golang.org)                             |
 | **Http**     | [Gin](https://github.com/gin-gonic/gin)                       |
 | **ORM**      | [GORM](https://gorm.io)                                       |
-| **Database** | PostgreSQL                                                    |
+| **Database** | [PostgresSQL](https://www.postgresql.org/)                                                    |
 | **API Docs** | [Swaggo (Gin Swagger)](https://github.com/swaggo/gin-swagger) |
 | **DI Tool**  | [Google Wire](https://github.com/google/wire)                 |
 
