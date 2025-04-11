@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type router struct {
@@ -22,6 +24,8 @@ func (r *router) Start(ip string, port uint16) {
 func CreateNewRouter(mode string) Router {
 	gin.SetMode(mode)
 	eng := gin.Default()
+	eng.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	r := router{
 		engine: eng,
 	}

@@ -1,6 +1,10 @@
 package network
 
-import "github.com/gin-gonic/gin"
+import (
+	"context"
+
+	"github.com/gin-gonic/gin"
+)
 
 type Response interface {
 	GetResCode() ResCode
@@ -58,4 +62,8 @@ type BaseModule[T any] interface {
 type Module[T any] interface {
 	BaseModule[T]
 	Controllers() []Controller
+}
+
+type BaseService interface {
+	Context() context.Context
 }

@@ -61,3 +61,7 @@ func NewNotFoundErr(message string, err error) ApiError {
 func NewInternalServerErr(message string, err error) ApiError {
 	return newApiError(http.StatusInternalServerError, message, err)
 }
+
+func ErrorResponse(message string, err error) ApiError {
+	return newApiError(http.StatusNotFound, message, err)
+}

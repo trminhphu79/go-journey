@@ -1,0 +1,105 @@
+definitions:
+  model.Task:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      slug:
+        type: string
+      status:
+        $ref: '#/definitions/model.TaskStatus'
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updatedAt:
+        type: string
+    required:
+    - description
+    - slug
+    - status
+    - tags
+    - title
+    type: object
+  model.TaskStatus:
+    enum:
+    - TODO
+    - IN_PROGRESS
+    - REJECTED
+    - RESOLVED
+    type: string
+    x-enum-varnames:
+    - Todo
+    - InProgress
+    - Rejected
+    - Resolved
+  network.apiError:
+    properties:
+      code:
+        type: integer
+      err: {}
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/task:
+    post:
+      consumes:
+      - application/json
+      description: Create a new task with the input data
+      parameters:
+      - description: Task object
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/model.Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.TaskStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.apiError'
+      summary: Create a new task
+      tags:
+      - Tasks
+  /api/v1/task/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a task by its ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/network.apiError'
+      summary: Get a task by ID
+      tags:
+      - Tasks
+swagger: "2.0"

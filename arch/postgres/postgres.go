@@ -1,15 +1,15 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
-var DB *gorm.DB
 
 func Connect() (*gorm.DB, error) {
 	host := os.Getenv("DB_HOST")
@@ -36,6 +36,44 @@ func Connect() (*gorm.DB, error) {
 	}
 
 	log.Println("✅ Connected to PostgreSQL successfully")
-	DB = db
 	return db, nil
 }
+
+type Database interface {
+	GetInstance() *database
+	Connect()
+	Disconnect()
+}
+
+type PostgresConfig struct {
+	User        string
+	Pwd         string
+	Host        string
+	Port        string
+	Name        string
+	MinPoolSize uint16
+	MaxPoolSize uint16
+	Timeout     time.Duration
+}
+
+type database struct {
+	*gorm.DB
+	config  PostgresConfig
+	context context.Context
+}
+
+func CreateDatabase(ctx context.Context, config PostgresConfig) Database {
+	db := database{
+		context: ctx,
+		config:  config,
+	}
+	return &db
+}
+
+func (db *database) GetInstance() *database {
+	return db
+}
+
+func (db *database) Connect() {}
+
+func (db *database) Disconnect() {}
