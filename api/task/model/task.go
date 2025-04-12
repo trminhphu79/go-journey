@@ -1,7 +1,11 @@
 package model
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type TaskStatus string
@@ -14,11 +18,18 @@ const (
 )
 
 type Task struct {
-	Title       string     `validate:"required"`
-	Description string     `validate:"required"`
-	Tags        []string   `validate:"required"`
-	Slug        string     `validate:"required"`
-	Status      TaskStatus `validate:"required"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          uuid.UUID  `gorm:"type:uuid;primaryKey;" json:"id"`
+	Title       string     `gorm:"column:title" json:"title"`
+	Description string     `gorm:"column:description" json:"description"`
+	Tags        []string   `gorm:"type:text[];column:tags" json:"tags,omitempty"`
+	Slug        string     `gorm:"column:slug" json:"slug"`
+	Status      TaskStatus `gorm:"column:status" json:"status"`
+	CreatedAt   time.Time  `gorm:"column:created_at" json:"createdAt"`
+	UpdatedAt   time.Time  `gorm:"column:updated_at" json:"updatedAt"`
+}
+
+func (t *Task) BeforeCreate(tx *gorm.DB) (err error) {
+	t.ID = uuid.New()
+	fmt.Println("Generated UUIT before create: ", t.ID)
+	return
 }

@@ -1,4 +1,3 @@
 #!/bin/bash
 # build.sh
-swag init
-go build -o app
+swag init --generalInfo cmd/main.go --output docs

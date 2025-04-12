@@ -1,9 +1,30 @@
 definitions:
+  dto.UpdateTask:
+    properties:
+      description:
+        example: Updated description
+        type: string
+      status:
+        example: slug-slug
+        type: string
+      tags:
+        example:
+        - '[''Bug'''
+        - ' ''Urgent'']'
+        items:
+          type: string
+        type: array
+      title:
+        example: Update title
+        type: string
+    type: object
   model.Task:
     properties:
       createdAt:
         type: string
       description:
+        type: string
+      id:
         type: string
       slug:
         type: string
@@ -17,12 +38,6 @@ definitions:
         type: string
       updatedAt:
         type: string
-    required:
-    - description
-    - slug
-    - status
-    - tags
-    - title
     type: object
   model.TaskStatus:
     enum:
@@ -100,6 +115,32 @@ paths:
           schema:
             $ref: '#/definitions/network.apiError'
       summary: Get a task by ID
+      tags:
+      - Tasks
+    patch:
+      consumes:
+      - application/json
+      description: Update task fields partially by ID
+      parameters:
+      - description: Task ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated task fields
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Task'
+      summary: Update a task
       tags:
       - Tasks
 swagger: "2.0"

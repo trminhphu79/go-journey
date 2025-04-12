@@ -28,6 +28,7 @@ func Start() {
 func create(env *config.Env) (Shutdown, network.Router, Module) {
 	context := context.Background()
 
+	//Connect database
 	dbConfig := postgres.PostgresConfig{
 		Host:        env.DBHost,
 		Port:        env.DBPort,
@@ -38,11 +39,13 @@ func create(env *config.Env) (Shutdown, network.Router, Module) {
 		MaxPoolSize: env.DBMaxPoolSize,
 		Timeout:     time.Duration(env.DBQueryTimeout) * time.Second,
 	}
-
 	db := postgres.CreateDatabase(context, dbConfig)
+	db.Connect()
 
+	// init module
 	module := CreateModule(context, env, db)
 
+	// init routes
 	router := network.CreateNewRouter(env.GoMode)
 	router.InitControllers(module.Controllers())
 

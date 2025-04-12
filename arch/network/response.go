@@ -90,3 +90,5 @@ func NewInternalServerErrorRes(message string) Response {
 		Message: message,
 	}
 }
+
+// func

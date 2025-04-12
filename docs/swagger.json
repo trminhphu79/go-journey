@@ -86,24 +86,86 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "description": "Update task fields partially by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Update a task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated task fields",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTask"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Task"
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
+        "dto.UpdateTask": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Updated description"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "slug-slug"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['Bug'",
+                        " 'Urgent']"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Update title"
+                }
+            }
+        },
         "model.Task": {
             "type": "object",
-            "required": [
-                "description",
-                "slug",
-                "status",
-                "tags",
-                "title"
-            ],
             "properties": {
                 "createdAt": {
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "slug": {

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type Response interface {
@@ -66,4 +67,9 @@ type Module[T any] interface {
 
 type BaseService interface {
 	Context() context.Context
+}
+
+type Dto[T any] interface {
+	GetValue() *T
+	ValidateErrors(errs validator.ValidationErrors) ([]string, error)
 }
