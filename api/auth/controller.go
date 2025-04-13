@@ -130,4 +130,5 @@ func (c *authController) Authenticate(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessDataRes("Login success", user)
+	ctx.Abort()
 }
