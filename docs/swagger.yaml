@@ -152,7 +152,30 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate account using username and password
+      description: Authenticate using accessToken
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/network.apiError'
+      summary: Authenticate using accessToken
+      tags:
+      - Auth
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login account using username and password
       parameters:
       - description: Registration details
         in: body
@@ -175,7 +198,7 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/network.apiError'
-      summary: Authenticate account
+      summary: Login account
       tags:
       - Auth
   /api/v1/auth/registration:

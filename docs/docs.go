@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/api/v1/auth/authenticate": {
             "post": {
-                "description": "Authenticate account using username and password",
+                "description": "Authenticate using accessToken",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,7 +27,42 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Authenticate account",
+                "summary": "Authenticate using accessToken",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/network.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/network.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "description": "Login account using username and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login account",
                 "parameters": [
                     {
                         "description": "Registration details",

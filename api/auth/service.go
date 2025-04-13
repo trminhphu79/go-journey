@@ -8,47 +8,28 @@ import (
 	"app/config"
 	"app/utils"
 
+	"fmt"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 	logger "github.com/sirupsen/logrus"
 )
 
 type AuthService interface {
 	RegisterUser(dto.RegistrationDTO) (user *model.User, err error)
 	Login(dto.LoginDTO) (res dto.LoginRessponseDTO, err error)
+	Authenticate(accessToken string) (user *model.User, err error)
+	GeneratePairToken(input model.User) (res dto.LoginRessponseDTO, err error)
+	ValidateAccessToken(tokenString string) (claims jwt.MapClaims, err error)
 }
 
 type authService struct {
 	network.BaseService
 	db  postgres.Database
 	env *config.Env
-	// rsaPrivateKey *rsa.PrivateKey
-	// rsaPublicKey  *rsa.PublicKey
 }
 
 func CreateAuthService(db postgres.Database, env *config.Env) AuthService {
-	// privatePem, err := utils.LoadPEMFileInto(env.RSAPrivateKeyPath)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// rsaPrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privatePem)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// publicPem, err := utils.LoadPEMFileInto(env.RSAPublicKeyPath)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// rsaPublicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicPem)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	logger.WithFields(logger.Fields{
-		"rsaPublicKey":  env.RSAPublicKey,
-		"rsaPrivateKey": env.RSAPublicKey,
-	}).Info("CONFIGURATION")
-
 	if env.RSAPublicKey != "" {
 		logger.Info("GET RSAPublicKey success")
 	}
@@ -56,8 +37,6 @@ func CreateAuthService(db postgres.Database, env *config.Env) AuthService {
 		BaseService: network.NewBaseService(),
 		db:          db.GetInstance(),
 		env:         env,
-		// rsaPrivateKey: rsaPrivateKey,
-		// rsaPublicKey:  rsaPublicKey,
 	}
 }
 
@@ -81,14 +60,92 @@ func (c *authService) RegisterUser(input dto.RegistrationDTO) (user *model.User,
 }
 
 func (c *authService) Login(input dto.LoginDTO) (res dto.LoginRessponseDTO, err error) {
-	// c.db.GetInstance().Where()
-	// tokens, err := c.GeneratePairToken(&model.User{})
-	return dto.LoginRessponseDTO{
-		AccessToken:  "",
-		RefreshToken: "",
-	}, nil
+	var user model.User
+
+	result := c.db.GetInstance().Where("username = ?", input.Username).First(&user)
+	if result.Error != nil {
+		logger.WithError(result.Error).Error("User not found")
+		return dto.LoginRessponseDTO{}, result.Error
+	}
+
+	valid := utils.ComparePassword(user.Password, input.Password)
+	if !valid {
+		logger.Error("Invalid credentials")
+		return dto.LoginRessponseDTO{}, network.NewUnauthorizedErr("Invalid credentials!", fmt.Errorf("Invalid credentials!"))
+	}
+
+	tokens, err := c.GeneratePairToken(user)
+	if err != nil {
+		logger.Error("Generate tokens failed!")
+		return dto.LoginRessponseDTO{}, err
+	}
+
+	return tokens, nil
+}
+
+func (c *authService) Authenticate(accessToken string) (user *model.User, err error) {
+	logger.Info("User authenticate: ", accessToken)
+	return nil, fmt.Errorf("")
 }
 
 func (c *authService) GeneratePairToken(input model.User) (res dto.LoginRessponseDTO, err error) {
-	return dto.LoginRessponseDTO{}, nil
+	accessTokenExpiry := time.Now().Add(time.Second * time.Duration(c.env.AccessTokenValiditySec))
+	accessClaims := jwt.MapClaims{
+		"sub":  input.ID.String(),
+		"user": input.Username,
+		"name": input.FullName,
+		"exp":  accessTokenExpiry.Unix(),
+		"iat":  time.Now().Unix(),
+	}
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessTokenString, err := accessToken.SignedString([]byte(c.env.RSAPrivateKey))
+	if err != nil {
+		logger.WithError(err).Error("Failed to generate access token")
+		return dto.LoginRessponseDTO{}, err
+	}
+
+	refreshTokenExpiry := time.Now().Add(time.Second * time.Duration(c.env.RefreshTokenValiditySec))
+	refreshClaims := jwt.MapClaims{
+		"sub": input.ID.String(),
+		"exp": refreshTokenExpiry.Unix(),
+		"iat": time.Now().Unix(),
+	}
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	refreshTokenString, err := refreshToken.SignedString([]byte(c.env.RSAPrivateKey))
+	if err != nil {
+		logger.WithError(err).Error("Failed to generate refresh token")
+		return dto.LoginRessponseDTO{}, err
+	}
+
+	return dto.LoginRessponseDTO{
+		AccessToken:  accessTokenString,
+		RefreshToken: refreshTokenString,
+	}, nil
+}
+
+func (c *authService) ValidateAccessToken(tokenString string) (claims jwt.MapClaims, err error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			logger.WithError(err).Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, network.NewUnauthorizedErr("Invalid credentials!", err)
+		}
+
+		return []byte(c.env.RSAPrivateKey), nil
+	})
+
+	if err != nil {
+		logger.WithError(err).Error("Failed to parse token")
+		return nil, network.NewUnauthorizedErr("Invalid credentials!", err)
+	}
+
+	if !token.Valid {
+		return nil, network.NewUnauthorizedErr("Invalid credentials!", fmt.Errorf("Invalid credentials"))
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		return claims, nil
+	}
+
+	logger.Error("failed to extract claims from token")
+	return nil, network.NewUnauthorizedErr("Invalid credentials!", fmt.Errorf("Invalid credentials"))
 }
