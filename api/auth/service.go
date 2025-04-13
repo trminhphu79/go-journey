@@ -7,12 +7,14 @@ import (
 	"app/arch/postgres"
 	"app/config"
 	"app/utils"
+	"errors"
 
 	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	logger "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type AuthService interface {
@@ -21,6 +23,7 @@ type AuthService interface {
 	Authenticate(accessToken string) (user *model.User, err error)
 	GeneratePairToken(input model.User) (res dto.LoginRessponseDTO, err error)
 	ValidateAccessToken(tokenString string) (claims jwt.MapClaims, err error)
+	FindUserById(id string) (user *model.User, err error)
 }
 
 type authService struct {
@@ -83,9 +86,26 @@ func (c *authService) Login(input dto.LoginDTO) (res dto.LoginRessponseDTO, err 
 	return tokens, nil
 }
 
-func (c *authService) Authenticate(accessToken string) (user *model.User, err error) {
-	logger.Info("User authenticate: ", accessToken)
-	return nil, fmt.Errorf("")
+func (c *authService) Authenticate(accessToken string) (data *model.User, err error) {
+	claims, err := c.ValidateAccessToken(accessToken)
+	if err != nil {
+		logger.Error("Authenticate error: ", err)
+		return nil, network.NewUnauthorizedErr("Invalid token", nil)
+	}
+
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		logger.Error("Extract token value is missing userID: ", sub)
+		return nil, network.NewUnauthorizedErr("Invalid token", nil)
+	}
+
+	logger.Infof("Token claims: sub=%s user=%v", sub)
+	user, err := c.FindUserById(sub)
+	if err != nil {
+		return nil, network.NewUnauthorizedErr("User not found", err)
+	}
+
+	return user, nil
 }
 
 func (c *authService) GeneratePairToken(input model.User) (res dto.LoginRessponseDTO, err error) {
@@ -148,4 +168,18 @@ func (c *authService) ValidateAccessToken(tokenString string) (claims jwt.MapCla
 
 	logger.Error("failed to extract claims from token")
 	return nil, network.NewUnauthorizedErr("Invalid credentials!", fmt.Errorf("Invalid credentials"))
+}
+
+func (c *authService) FindUserById(id string) (data *model.User, err error) {
+	var user model.User
+	result := c.db.GetInstance().Where("id = ?", id).First(&user)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &user, nil
 }

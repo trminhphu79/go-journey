@@ -16,9 +16,10 @@ type taskController struct {
 
 func CreateController(
 	service TaskService,
+	authProvider network.AuthenticationProvider,
 ) network.Controller {
 	return &taskController{
-		BaseController: network.NewBaseController("api/v1/task"),
+		BaseController: network.NewBaseController("api/v1/task", authProvider),
 		service:        service,
 	}
 }

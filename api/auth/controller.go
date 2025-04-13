@@ -16,9 +16,10 @@ type authController struct {
 
 func CreateController(
 	service AuthService,
+	authProvider network.AuthenticationProvider,
 ) network.Controller {
 	return &authController{
-		BaseController: network.NewBaseController("api/v1/auth"),
+		BaseController: network.NewBaseController("api/v1/auth", authProvider),
 		service:        service,
 	}
 }
@@ -103,7 +104,7 @@ func (c *authController) Authenticate(ctx *gin.Context) {
 	rawToken = ctx.GetHeader("Authorization")
 	if rawToken == "" {
 		logger.Error("Missing token header")
-		c.Send(ctx).UnauthorizedEr("Unauthorized", nil)
+		c.Send(ctx).UnauthorizedErr("Unauthorized", nil)
 		return
 	}
 
@@ -112,21 +113,21 @@ func (c *authController) Authenticate(ctx *gin.Context) {
 	parts := strings.Split(rawToken, " ")
 	if len(parts) < 2 {
 		logger.Error("Token format is invalid")
-		c.Send(ctx).UnauthorizedEr("Unauthorized", nil)
+		c.Send(ctx).UnauthorizedErr("Unauthorized", nil)
 		return
 	}
 
 	accessToken := strings.Split(rawToken, " ")[1]
 	if accessToken == "" {
 		logger.Error("Token value is empty")
-		c.Send(ctx).UnauthorizedEr("Unauthorized", nil)
+		c.Send(ctx).UnauthorizedErr("Unauthorized", nil)
 		return
 	}
 
 	logger.Info("accessToken after handle: ", accessToken)
 	user, err := c.service.Authenticate(accessToken)
 	if err != nil {
-		c.Send(ctx).UnauthorizedEr("Unauthorized", err)
+		c.Send(ctx).UnauthorizedErr("Unauthorized", err)
 		return
 	}
 	c.Send(ctx).SuccessDataRes("Login success", user)

@@ -26,7 +26,7 @@ type SendResponse interface {
 	SuccessDataRes(message string, data any)
 	BadRequestErr(message string, err error)
 	ForbiddenErr(message string, err error)
-	UnauthorizedEr(message string, err error)
+	UnauthorizedErr(message string, err error)
 	NotFoundErr(message string, err error)
 	InternalServerErr(message string, err error)
 	ComposeError(err error)
@@ -74,3 +74,14 @@ type Dto[T any] interface {
 	GetValue() *T
 	ValidateErrors(errs validator.ValidationErrors) ([]string, error)
 }
+
+type BaseMiddleware interface {
+	ResponseSender
+	Debug() bool
+}
+type ParamMiddlewareProvider interface {
+	BaseMiddleware
+	Middleware() gin.HandlerFunc
+}
+
+type AuthenticationProvider ParamMiddlewareProvider

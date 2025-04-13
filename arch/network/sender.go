@@ -41,7 +41,7 @@ func (s *send) BadRequestErr(msg string, err error) {
 	s.sendError(NewBadRequestErr(msg, err))
 }
 
-func (s *send) UnauthorizedEr(msg string, err error) {
+func (s *send) UnauthorizedErr(msg string, err error) {
 	s.sendError(NewUnauthorizedErr(msg, err))
 }
 

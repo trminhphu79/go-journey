@@ -2,6 +2,7 @@ package startup
 
 import (
 	"app/api/auth"
+	"app/api/auth/middleware"
 	"app/api/task"
 	"app/arch/network"
 	"app/arch/postgres"
@@ -24,11 +25,14 @@ func (m *module) GetInstance() *module {
 
 func (m *module) Controllers() []network.Controller {
 	return []network.Controller{
-		task.CreateController(m.TaskService),
-		auth.CreateController(m.AuthService),
+		task.CreateController(m.TaskService, m.AuthenticationProvider()),
+		auth.CreateController(m.AuthService, m.AuthenticationProvider()),
 	}
 }
 
+func (m *module) AuthenticationProvider() network.AuthenticationProvider {
+	return middleware.NewAuthenticateHandler(m.AuthService)
+}
 func CreateModule(context context.Context, env *config.Env, db postgres.Database) Module {
 	taskService := task.CreateService(db)
 	authService := auth.CreateAuthService(db, env)

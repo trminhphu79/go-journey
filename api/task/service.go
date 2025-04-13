@@ -42,10 +42,12 @@ func (s *taskService) FindTaskById(taskId string) *model.Task {
 
 func (s *taskService) CreateTask(input dto.CreateTaskDTO) (*model.Task, error) {
 	task := model.Task{
-		Title:       input.Title,
-		Description: input.Description,
-		Status:      model.Todo,
-		Slug:        input.Slug,
+		Title:        input.Title,
+		Description:  input.Description,
+		Status:       model.Todo,
+		Slug:         input.Slug,
+		AssigneeID:   nil,
+		AssignedByID: nil,
 	}
 
 	result := s.db.GetInstance().Create(&task)
