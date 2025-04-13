@@ -95,7 +95,7 @@ func (s *send) sendError(err ApiError) {
 	s.sendResponse(res)
 }
 
-func (s *send) MixedError(err error) {
+func (s *send) ComposeError(err error) {
 	if err == nil {
 		s.InternalServerError("something went wrong", err)
 		return

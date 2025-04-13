@@ -1,6 +1,7 @@
 package model
 
 import (
+	"app/api/auth/model"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,6 +27,12 @@ type Task struct {
 	Status      TaskStatus `gorm:"column:status" json:"status"`
 	CreatedAt   time.Time  `gorm:"column:created_at" json:"createdAt"`
 	UpdatedAt   time.Time  `gorm:"column:updated_at" json:"updatedAt"`
+
+	AssigneeID uuid.UUID   `gorm:"type:uuid;column:assignee_id" json:"assigneeId"`
+	Assignee   *model.User `gorm:"foreignKey:AssigneeID" json:"assignee,omitempty"`
+
+	AssignedByID uuid.UUID  `gorm:"type:uuid;column:assigned_by_id" json:"assignedById"`
+	AssignedBy   model.User `gorm:"foreignKey:AssignedByID" json:"assignedBy,omitempty"`
 }
 
 func (t *Task) BeforeCreate(tx *gorm.DB) (err error) {

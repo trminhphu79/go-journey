@@ -28,12 +28,14 @@ func (c *taskController) AddRouters(group *gin.RouterGroup) {
 	group.POST("/", c.createNewTask)
 	group.PATCH("/:id", c.updateTask)
 	group.DELETE("/:id", c.deleteTask)
+	group.POST("/paging", c.pagingTask)
+	group.POST("/assign", c.assignTask)
 }
 
 // GetTaskById godoc
 // @Summary Get a task by ID
 // @Description Get a task by its ID
-// @Tags Tasks
+// @Tags Task
 // @Accept json
 // @Produce json
 // @Param id path string true "Task ID"
@@ -50,10 +52,10 @@ func (c *taskController) getTaskById(ctx *gin.Context) {
 // CreateTask godoc
 // @Summary Create a new task
 // @Description Create a new task with the input data
-// @Tags Tasks
+// @Tags Task
 // @Accept json
 // @Produce json
-// @Param task body model.Task true "Task object"
+// @Body task body model.Task true "Task object"
 // @Success 201 {object} model.TaskStatus
 // @Failure 400 {object} network.apiError
 // @Router /api/v1/task [post]
@@ -67,7 +69,7 @@ func (c *taskController) createNewTask(ctx *gin.Context) {
 	}
 	value, err := c.service.CreateTask(input)
 	if err != nil {
-		c.Send(ctx).MixedError(err)
+		c.Send(ctx).ComposeError(err)
 		return
 	}
 
@@ -77,7 +79,7 @@ func (c *taskController) createNewTask(ctx *gin.Context) {
 // updateTask godoc
 // @Summary Update a task
 // @Description Update task fields partially by ID
-// @Tags Tasks
+// @Tags Task
 // @Accept json
 // @Produce json
 // @Param id path string true "Task ID (UUID)"
@@ -107,7 +109,7 @@ func (c *taskController) updateTask(ctx *gin.Context) {
 
 	if err != nil {
 		log.WithError(err).Error("Failed to update task")
-		c.Send(ctx).MixedError(err)
+		c.Send(ctx).ComposeError(err)
 		return
 	}
 
@@ -118,7 +120,7 @@ func (c *taskController) updateTask(ctx *gin.Context) {
 // deleteTask godoc
 // @Summary Delete a task
 // @Description Delete a task by its ID
-// @Tags Tasks
+// @Tags Task
 // @Accept json
 // @Produce json
 // @Param id path string true "Task ID (UUID)"
@@ -135,7 +137,7 @@ func (c *taskController) deleteTask(ctx *gin.Context) {
 	affected, err := c.service.DeleteTask(taskID)
 	if err != nil {
 		log.WithError(err).Error("Failed to delete task")
-		c.Send(ctx).MixedError(err)
+		c.Send(ctx).ComposeError(err)
 		return
 	}
 	log.WithFields(log.Fields{
@@ -145,12 +147,55 @@ func (c *taskController) deleteTask(ctx *gin.Context) {
 	c.Send(ctx).SuccessDataRes("Delete task success", affected)
 }
 
+// PagingTask godoc
+// @Summary Get paginated list of tasks
+// @Description Retrieves a paginated list of tasks filtered by title and status
+// @Tags Task
+// @Accept json
+// @Produce json
+// @Param request body dto.PagingTaskDto true "Pagination and filter criteria"
+// @Success 200 {object} network.response{data=[]model.Task} "Success response with paginated tasks"
+// @Failure 400 {object} network.response "Bad request error"
+// @Failure 500 {object} network.response "Internal server error"
+// @Router /api/v1/task/paging [post]
 func (c *taskController) pagingTask(ctx *gin.Context) {
-	log.WithFields(
-		log.Fields{
-			"keyword": ctx.Param("keyword"),
-			"offset": ctx.Param("offset"),
-			"limit": ctx.Param("limit"),
-		}
-	).Info("Paging Task")
+	var input dto.PagingTaskDto
+
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		log.WithError(err).Warn("Invalid input for task paging")
+		c.Send(ctx).BadRequestErr("Input value is invalid", err)
+		return
+	}
+
+	log.WithFields(log.Fields{
+		"keyword": input.Keyword,
+		"offset":  input.Offset,
+		"limit":   input.Limit,
+		"status":  input.Status,
+	}).Info("Processing task paging request")
+
+	// You need to implement this in your service
+	tasks, err := c.service.PagingTask(input)
+	if err != nil {
+		log.WithError(err).Error("Failed to retrieve paged tasks")
+		c.Send(ctx).BadRequestErr("Failed to retrieve tasks", err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataRes("Tasks retrieved successfully", tasks)
+}
+
+// Assign Task godoc
+// @Summary Assign task to a user
+// @Description Assign task to a user
+// @Tags Task
+// @Accept json
+// @Produce json
+// @Param request body dto.PagingTaskDto true "Pagination and filter criteria"
+// @Success 200 {object} network.response{data=model.Task} "Success response with paginated tasks"
+// @Failure 400 {object} network.response "Bad request error"
+// @Failure 500 {object} network.response "Internal server error"
+// @Router /api/v1/task/assign [post]
+func (c *taskController) assignTask(ctx *gin.Context) {
+	c.Send(ctx).SuccessMsgRes("Assign success")
 }
