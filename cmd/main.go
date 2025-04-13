@@ -2,10 +2,11 @@ package main
 
 import (
 	"app/startup"
-	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	fmt.Println("Application init...")
+	log.Info("Application init...")
 	startup.Start()
 }

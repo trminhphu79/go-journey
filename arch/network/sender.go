@@ -1,6 +1,7 @@
 package network
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -56,6 +57,10 @@ func (s *send) ForbiddenErr(msg string, err error) {
 	s.sendError(NewForbiddenErr(msg, err))
 }
 
+func (s *send) InternalServerError(message string, err error) {
+	s.sendError(NewInternalServerErr(message, err))
+}
+
 func (s *send) sendResponse(response Response) {
 	s.context.JSON(int(response.GetStatus()), response)
 	s.context.Abort()
@@ -88,4 +93,19 @@ func (s *send) sendError(err ApiError) {
 	}
 
 	s.sendResponse(res)
+}
+
+func (s *send) MixedError(err error) {
+	if err == nil {
+		s.InternalServerError("something went wrong", err)
+		return
+	}
+
+	var apiError ApiError
+	if errors.As(err, &apiError) {
+		s.sendError(apiError)
+		return
+	}
+
+	s.InternalServerError(err.Error(), err)
 }

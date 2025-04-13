@@ -6,8 +6,9 @@ import (
 	"app/config"
 	_ "app/docs"
 	"context"
-	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Shutdown = func()
@@ -19,7 +20,7 @@ type Shutdown = func()
 // @BasePath /
 func Start() {
 	env := config.IniitEnv(".env", true)
-	fmt.Println("ENV: ", env)
+	log.WithField("environment", env).Info("Environment loaded")
 	shutdown, router, _ := create(env)
 	defer shutdown()
 	router.Start(env.ServerHost, env.ServerPort)
@@ -53,6 +54,6 @@ func create(env *config.Env) (Shutdown, network.Router, Module) {
 		db.Disconnect()
 	}
 
-	fmt.Println("Start server succesfully!!")
+	log.Info("Server started successfully")
 	return shutdown, router, module
 }

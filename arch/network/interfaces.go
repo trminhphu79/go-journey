@@ -29,6 +29,7 @@ type SendResponse interface {
 	UnauthorizedEr(message string, err error)
 	NotFoundErr(message string, err error)
 	InternalServerErr(message string, err error)
+	MixedError(err error)
 }
 
 type ResponseSender interface {

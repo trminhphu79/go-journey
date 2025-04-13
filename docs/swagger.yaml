@@ -51,6 +51,18 @@ definitions:
     - InProgress
     - Rejected
     - Resolved
+  network.ResCode:
+    enum:
+    - "7979"
+    - "7980"
+    - "7981"
+    - "7982"
+    type: string
+    x-enum-varnames:
+    - success_code
+    - failue_code
+    - retry_code
+    - invalid_access_token_code
   network.apiError:
     properties:
       code:
@@ -58,6 +70,21 @@ definitions:
       err: {}
       message:
         type: string
+    type: object
+  network.response:
+    properties:
+      code:
+        $ref: '#/definitions/network.ResCode'
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    required:
+    - code
+    - data
+    - message
+    - status
     type: object
 info:
   contact: {}
@@ -89,6 +116,31 @@ paths:
       tags:
       - Tasks
   /api/v1/task/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a task by its ID
+      parameters:
+      - description: Task ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response with number of affected rows
+          schema:
+            allOf:
+            - $ref: '#/definitions/network.response'
+            - properties:
+                data:
+                  type: integer
+              type: object
+      summary: Delete a task
+      tags:
+      - Tasks
     get:
       consumes:
       - application/json

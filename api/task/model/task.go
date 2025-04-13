@@ -1,10 +1,10 @@
 package model
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -30,6 +30,6 @@ type Task struct {
 
 func (t *Task) BeforeCreate(tx *gorm.DB) (err error) {
 	t.ID = uuid.New()
-	fmt.Println("Generated UUIT before create: ", t.ID)
+	log.Info("Generated UUIT before create: ", t.ID)
 	return
 }

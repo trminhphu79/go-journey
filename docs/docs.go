@@ -98,6 +98,48 @@ const docTemplate = `{
                     }
                 }
             },
+            "delete": {
+                "description": "Delete a task by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Delete a task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response with number of affected rows",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/network.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "patch": {
                 "description": "Update task fields partially by ID",
                 "consumes": [
@@ -214,6 +256,21 @@ const docTemplate = `{
                 "Resolved"
             ]
         },
+        "network.ResCode": {
+            "type": "string",
+            "enum": [
+                "7979",
+                "7980",
+                "7981",
+                "7982"
+            ],
+            "x-enum-varnames": [
+                "success_code",
+                "failue_code",
+                "retry_code",
+                "invalid_access_token_code"
+            ]
+        },
         "network.apiError": {
             "type": "object",
             "properties": {
@@ -223,6 +280,27 @@ const docTemplate = `{
                 "err": {},
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "network.response": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "message",
+                "status"
+            ],
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/network.ResCode"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
                 }
             }
         }

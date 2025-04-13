@@ -3,10 +3,10 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -53,11 +53,13 @@ func (db *database) Connect() {
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
 
-	fmt.Sprintln("host: ", host)
-	fmt.Sprintln("user: ", user)
-	fmt.Sprintln("port: ", port)
-	fmt.Sprintln("password: ", password)
-	fmt.Sprintln("dbname: ", dbname)
+	log.WithFields(log.Fields{
+		"host":     host,
+		"user":     user,
+		"port":     port,
+		"password": "****",
+		"dbname":   dbname,
+	}).Info("Database connection parameters")
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
@@ -74,7 +76,11 @@ func (db *database) Connect() {
 			break
 		}
 
-		log.Printf("Failed to connect to database (attempt %d/%d): %v", i+1, maxRetries, err)
+		log.WithFields(log.Fields{
+			"attempt":    i + 1,
+			"maxRetries": maxRetries,
+			"error":      err,
+		}).Warn("Failed to connect to database")
 
 		// Wait before retrying (exponential backoff)
 		retryDelay := time.Duration(1<<uint(i)) * time.Second
@@ -82,17 +88,17 @@ func (db *database) Connect() {
 			retryDelay = 10 * time.Second
 		}
 
-		log.Printf("Retrying in %v...", retryDelay)
+		log.WithField("delay", retryDelay).Info("Retrying connection")
 		time.Sleep(retryDelay)
 	}
 
 	if err != nil {
-		log.Println("❌ Maximum retries reached. Failed to connect to database:", err)
+		log.WithError(err).Error("Maximum retries reached. Failed to connect to database")
 		return
 	}
 
 	db.DB = gormDB
-	log.Println("✅ Connected to PostgreSQL successfully")
+	log.Info("✅ Connected to PostgreSQL successfully")
 }
 
 func (db *database) Disconnect() {}

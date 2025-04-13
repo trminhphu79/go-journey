@@ -1,8 +1,9 @@
 package dto
 
-type CreateTask struct {
-	Title       string   `validate:"required"`
-	Description string   `validate:"required"`
-	Tags        []string `validate:"required"`
-	Slug        string   `validate:"required"`
+type CreateTaskDTO struct {
+	Title       string   `json:"title" binding:"required"`
+	Description string   `json:"description"`
+	Tags        []string `json:"tags"`
+	Status      string   `json:"status"`
+	Slug        string   `json:"slug"`
 }
