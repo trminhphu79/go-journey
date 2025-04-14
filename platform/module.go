@@ -1,4 +1,4 @@
-package framework
+package platform
 
 import (
 	"app/api/auth"
