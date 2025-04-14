@@ -1,4 +1,4 @@
-package startup
+package framework
 
 import (
 	"app/api/auth"

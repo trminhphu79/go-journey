@@ -1,12 +1,12 @@
 package main
 
 import (
-	"app/startup"
+	"app/framework"
 
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
 	log.Info("Application init...")
-	startup.Start()
+	framework.Start()
 }
