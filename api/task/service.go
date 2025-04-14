@@ -3,6 +3,7 @@ package task
 import (
 	"app/api/task/dto"
 	"app/api/task/model"
+	TaskRepository "app/api/task/repository"
 	"app/arch/network"
 	"app/arch/postgres"
 
@@ -23,7 +24,8 @@ type TaskService interface {
 }
 type taskService struct {
 	network.BaseService
-	db postgres.Database
+	db         postgres.Database
+	repository TaskRepository.ITaskRepo
 }
 
 func CreateService(db postgres.Database) TaskService {
@@ -31,6 +33,7 @@ func CreateService(db postgres.Database) TaskService {
 	return &taskService{
 		BaseService: network.NewBaseService(),
 		db:          db.GetInstance(),
+		repository:  TaskRepository.CreateTaskRepository(db),
 	}
 }
 
@@ -65,33 +68,7 @@ func (s *taskService) UpdateTask(taskId uuid.UUID, input dto.UpdateTask) (return
 		"taskId": taskId,
 		"input":  input,
 	}).Info("Updating task")
-
-	task := model.Task{
-		ID:          taskId,
-		Title:       input.Title,
-		Slug:        input.Slug,
-		Description: input.Description,
-	}
-
-	result := s.db.GetInstance().Save(task)
-
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Error("Task not found ", result.Error)
-		return nil, result.Error
-	}
-
-	if result.Error != nil {
-		return nil, network.NewInternalServerErr("Update task failed", result.Error)
-	}
-
-	if result.RowsAffected <= 0 {
-		log.WithField("taskId", taskId).Warn("Failed to update task, not found")
-		return nil, network.NewNotFoundErr("Update task failed", err)
-	}
-
-	log.WithField("taskId", taskId).Info("Task updated successfully")
-	return &task, nil
-
+	return s.repository.FindOneAndUpdate(taskId, input)
 }
 
 func (s *taskService) DeleteTask(taskId uuid.UUID) (affected int64, err error) {
